@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.Extensions.Internal;
 
@@ -135,9 +136,38 @@ namespace Microsoft.AspNet.Razor
                 throw new ArgumentNullException(nameof(text));
             }
 
-            var tracker = new SourceLocationTracker(left);
-            tracker.UpdateLocation(text);
-            return tracker.CurrentLocation;
+            int newAbsoluteIndex = left.AbsoluteIndex;
+            int newCharacterIndex = left.CharacterIndex;
+            int newLineIndex = left.LineIndex;
+            for (int i = 0; i < text.Length; i++)
+            {
+                var nextCharacter = '\0';
+                if (i < text.Length - 1)
+                {
+                    nextCharacter = text[i + 1];
+                }
+
+                newAbsoluteIndex++;
+
+                if (Environment.NewLine.Length == 1 && text[i] == Environment.NewLine[0] ||
+                    ParserHelpers.IsNewLine(text[i]) && (text[i] != '\r' || nextCharacter != '\n'))
+                {
+                    newLineIndex++;
+                    newCharacterIndex = 0;
+                }
+                else
+                {
+                    newCharacterIndex++;
+                }
+            }
+
+            var newLocation = new SourceLocation(
+                left.FilePath,
+                newAbsoluteIndex,
+                newLineIndex,
+                newCharacterIndex);
+
+            return newLocation;
         }
 
         /// <summary>

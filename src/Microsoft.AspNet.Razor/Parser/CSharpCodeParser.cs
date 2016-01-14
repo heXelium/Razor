@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     {
                         var split = Language.SplitSymbol(CurrentSymbol, 1, CSharpSymbolType.Transition);
                         current = split.Item1;
-                        Context.Source.Position = split.Item2.Start.AbsoluteIndex;
+                        //Context.Source.Position = split.Item2.Start.AbsoluteIndex; Do we even need this??
                         NextToken();
                     }
                     else if (At(CSharpSymbolType.Transition))
@@ -571,7 +571,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 // If necessary, put an empty-content marker symbol here
                 if (Span.Symbols.Count == 0)
                 {
-                    Accept(new CSharpSymbol(CurrentLocation, string.Empty, CSharpSymbolType.Unknown));
+                    Accept(new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown));
                 }
 
                 // Output the content span and then capture the ")"

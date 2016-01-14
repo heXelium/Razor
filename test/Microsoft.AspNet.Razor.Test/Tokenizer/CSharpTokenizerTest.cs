@@ -18,8 +18,8 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         public void Next_Returns_Newline_Token_For_Single_CR()
         {
             TestTokenizer("\r\ra",
-                          new CSharpSymbol(0, 0, 0, "\r", CSharpSymbolType.NewLine),
-                          new CSharpSymbol(1, 1, 0, "\r", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\r", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\r", CSharpSymbolType.NewLine),
                           IgnoreRemaining);
         }
 
@@ -27,8 +27,8 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         public void Next_Returns_Newline_Token_For_Single_LF()
         {
             TestTokenizer("\n\na",
-                          new CSharpSymbol(0, 0, 0, "\n", CSharpSymbolType.NewLine),
-                          new CSharpSymbol(1, 1, 0, "\n", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\n", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\n", CSharpSymbolType.NewLine),
                           IgnoreRemaining);
         }
 
@@ -37,8 +37,8 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         {
             // NEL: Unicode "Next Line" U+0085
             TestTokenizer("\u0085\u0085a",
-                          new CSharpSymbol(0, 0, 0, "\u0085", CSharpSymbolType.NewLine),
-                          new CSharpSymbol(1, 1, 0, "\u0085", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\u0085", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\u0085", CSharpSymbolType.NewLine),
                           IgnoreRemaining);
         }
 
@@ -47,8 +47,8 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         {
             // Unicode "Line Separator" U+2028
             TestTokenizer("\u2028\u2028a",
-                          new CSharpSymbol(0, 0, 0, "\u2028", CSharpSymbolType.NewLine),
-                          new CSharpSymbol(1, 1, 0, "\u2028", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\u2028", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\u2028", CSharpSymbolType.NewLine),
                           IgnoreRemaining);
         }
 
@@ -57,8 +57,8 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         {
             // Unicode "Paragraph Separator" U+2029
             TestTokenizer("\u2029\u2029a",
-                          new CSharpSymbol(0, 0, 0, "\u2029", CSharpSymbolType.NewLine),
-                          new CSharpSymbol(1, 1, 0, "\u2029", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\u2029", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\u2029", CSharpSymbolType.NewLine),
                           IgnoreRemaining);
         }
 
@@ -66,8 +66,8 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         public void Next_Returns_Single_Newline_Token_For_CRLF()
         {
             TestTokenizer("\r\n\r\na",
-                          new CSharpSymbol(0, 0, 0, "\r\n", CSharpSymbolType.NewLine),
-                          new CSharpSymbol(2, 1, 0, "\r\n", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\r\n", CSharpSymbolType.NewLine),
+                          new CSharpSymbol("\r\n", CSharpSymbolType.NewLine),
                           IgnoreRemaining);
         }
 
@@ -75,9 +75,9 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         public void Next_Returns_Token_For_Whitespace_Characters()
         {
             TestTokenizer(" \f\t\u000B \n ",
-                          new CSharpSymbol(0, 0, 0, " \f\t\u000B ", CSharpSymbolType.WhiteSpace),
-                          new CSharpSymbol(5, 0, 5, "\n", CSharpSymbolType.NewLine),
-                          new CSharpSymbol(6, 1, 0, " ", CSharpSymbolType.WhiteSpace));
+                          new CSharpSymbol(" \f\t\u000B ", CSharpSymbolType.WhiteSpace),
+                          new CSharpSymbol("\n", CSharpSymbolType.NewLine),
+                          new CSharpSymbol(" ", CSharpSymbolType.WhiteSpace));
         }
 
         [Fact]
@@ -90,8 +90,8 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         public void Transition_Is_Recognized_As_SingleCharacter()
         {
             TestTokenizer("@(",
-                          new CSharpSymbol(0, 0, 0, "@", CSharpSymbolType.Transition),
-                          new CSharpSymbol(1, 0, 1, "(", CSharpSymbolType.LeftParenthesis));
+                          new CSharpSymbol("@", CSharpSymbolType.Transition),
+                          new CSharpSymbol("(", CSharpSymbolType.LeftParenthesis));
         }
     }
 }

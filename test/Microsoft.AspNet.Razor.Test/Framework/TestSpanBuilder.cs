@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return new UnclassifiedCodeSpanConstructor(
                 self.Span(
                     SpanKind.Code,
-                    new CSharpSymbol(self.LocationTracker.CurrentLocation, string.Empty, CSharpSymbolType.Unknown)));
+                    new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown)));
         }
 
         public static SpanConstructor EmptyHtml(this SpanFactory self)
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             return self
                 .Span(
                     SpanKind.Markup,
-                    new HtmlSymbol(self.LocationTracker.CurrentLocation, string.Empty, HtmlSymbolType.Unknown))
+                    new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown))
                 .With(new MarkupChunkGenerator());
         }
 
@@ -170,34 +170,34 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         public SpanConstructor Span(SpanKind kind, string content, CSharpSymbolType type)
         {
-            return CreateSymbolSpan(kind, content, st => new CSharpSymbol(st, content, type));
+            return CreateSymbolSpan(kind, content, new CSharpSymbol(content, type));
         }
 
         public SpanConstructor Span(SpanKind kind, string content, HtmlSymbolType type)
         {
-            return CreateSymbolSpan(kind, content, st => new HtmlSymbol(st, content, type));
+            return CreateSymbolSpan(kind, content, new HtmlSymbol(content, type));
         }
 
         public SpanConstructor Span(SpanKind kind, string content, bool markup)
         {
-            return new SpanConstructor(kind, Tokenize(new[] { content }, markup));
+            return new SpanConstructor(LocationTracker.CurrentLocation, kind, Tokenize(new[] { content }, markup));
         }
 
         public SpanConstructor Span(SpanKind kind, string[] content, bool markup)
         {
-            return new SpanConstructor(kind, Tokenize(content, markup));
+            return new SpanConstructor(LocationTracker.CurrentLocation, kind, Tokenize(content, markup));
         }
 
         public SpanConstructor Span(SpanKind kind, params ISymbol[] symbols)
         {
-            return new SpanConstructor(kind, symbols);
+            return new SpanConstructor(LocationTracker.CurrentLocation, kind, symbols);
         }
 
-        private SpanConstructor CreateSymbolSpan(SpanKind kind, string content, Func<SourceLocation, ISymbol> ctor)
+        private SpanConstructor CreateSymbolSpan(SpanKind kind, string content, ISymbol symbol)
         {
             var start = LocationTracker.CurrentLocation;
             LocationTracker.UpdateLocation(content);
-            return new SpanConstructor(kind, new[] { ctor(start) });
+            return new SpanConstructor(start, kind, new[] { symbol });
         }
 
         public void Reset()
@@ -217,7 +217,6 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             ISymbol last = null;
             while ((sym = tok.NextSymbol()) != null)
             {
-                OffsetStart(sym, LocationTracker.CurrentLocation);
                 last = sym;
                 yield return sym;
             }
@@ -234,11 +233,6 @@ namespace Microsoft.AspNet.Razor.Test.Framework
             {
                 return CodeTokenizerFactory(seekableTextReader);
             }
-        }
-
-        private void OffsetStart(ISymbol sym, SourceLocation sourceLocation)
-        {
-            sym.OffsetStart(sourceLocation);
         }
     }
 
@@ -365,14 +359,15 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         internal static IEnumerable<ISymbol> TestTokenizer(string str)
         {
-            yield return new RawTextSymbol(SourceLocation.Zero, str);
+            yield return new RawTextSymbol(str);
         }
 
-        public SpanConstructor(SpanKind kind, IEnumerable<ISymbol> symbols)
+        public SpanConstructor(SourceLocation start, SpanKind kind, IEnumerable<ISymbol> symbols)
         {
             Builder = new SpanBuilder();
             Builder.Kind = kind;
             Builder.EditHandler = SpanEditHandler.CreateDefault(TestTokenizer);
+            Builder.Start = start;
             foreach (ISymbol sym in symbols)
             {
                 Builder.Accept(sym);

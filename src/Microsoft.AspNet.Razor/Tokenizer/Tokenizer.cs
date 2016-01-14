@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             CurrentState = StartState;
         }
 
-        protected abstract TSymbol CreateSymbol(SourceLocation start, string content, TSymbolType type, IEnumerable<RazorError> errors);
+        protected abstract TSymbol CreateSymbol(string content, TSymbolType type, IEnumerable<RazorError> errors);
 
         protected TSymbol Single(TSymbolType type)
         {
@@ -107,15 +107,10 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         protected TSymbol EndSymbol(TSymbolType type)
         {
-            return EndSymbol(CurrentStart, type);
-        }
-
-        protected TSymbol EndSymbol(SourceLocation start, TSymbolType type)
-        {
             TSymbol sym = null;
             if (HaveContent)
             {
-                sym = CreateSymbol(start, Buffer.ToString(), type, CurrentErrors.ToArray());
+                sym = CreateSymbol(Buffer.ToString(), type, CurrentErrors.ToArray());
             }
             StartSymbol();
             return sym;
@@ -183,14 +178,13 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             if (CurrentCharacter == '*')
             {
                 var star = CurrentCharacter;
-                var start = CurrentLocation;
                 MoveNext();
                 if (!EndOfFile && CurrentCharacter == '@')
                 {
                     State next = () =>
                     {
                         Buffer.Append(star);
-                        return Transition(EndSymbol(start, RazorCommentStarType), () =>
+                        return Transition(EndSymbol(RazorCommentStarType), () =>
                         {
                             if (CurrentCharacter != '@')
                             {

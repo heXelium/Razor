@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void UsingKeyword(bool topLevel)
         {
             Assert(CSharpKeyword.Using);
-            var block = new Block(CurrentSymbol);
+            var block = new Block(GetCurrentSymbolName(), CurrentLocation);
             AcceptAndMoveNext();
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
@@ -173,8 +173,12 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             Span.EditHandler.AcceptedCharacters = AcceptedCharacters.AnyExceptNewline;
-            Span.ChunkGenerator = new AddImportChunkGenerator(
-                Span.GetContent(symbols => symbols.Skip(1)));
+            var leadingWhitespace = Span.Symbols.FirstOrDefault();
+            var valueLocation = leadingWhitespace != null ?
+                SourceLocation.Advance(Span.Start, leadingWhitespace.Content) :
+                Span.Start;
+
+            Span.ChunkGenerator = new AddImportChunkGenerator(Span.Symbols.Skip(1).GetContent(valueLocation));
 
             // Optional ";"
             if (EnsureCurrent())
@@ -314,7 +318,7 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 return;
             }
-            var block = new Block(CurrentSymbol);
+            var block = new Block(GetCurrentSymbolName(), CurrentLocation);
 
             AcceptAndMoveNext();
             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
@@ -355,7 +359,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void UnconditionalBlock()
         {
             Assert(CSharpSymbolType.Keyword);
-            var block = new Block(CurrentSymbol);
+            var block = new Block(GetCurrentSymbolName(), CurrentLocation);
             AcceptAndMoveNext();
             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
             ExpectCodeBlock(block);
@@ -365,7 +369,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             Assert(CSharpKeyword.Catch);
 
-            var block = new Block(CurrentSymbol);
+            var block = new Block(GetCurrentSymbolName(), CurrentLocation);
 
             // Accept "catch"
             AcceptAndMoveNext();
@@ -399,7 +403,7 @@ namespace Microsoft.AspNet.Razor.Parser
         private void ConditionalBlock(bool topLevel)
         {
             Assert(CSharpSymbolType.Keyword);
-            var block = new Block(CurrentSymbol);
+            var block = new Block(GetCurrentSymbolName(), CurrentLocation);
             ConditionalBlock(block);
             if (topLevel)
             {
@@ -449,9 +453,6 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Accept whitespace but always keep the last whitespace node so we can put it back if necessary
             var lastWhitespace = AcceptWhiteSpaceInLines();
-            Debug.Assert(lastWhitespace == null ||
-                (lastWhitespace.Start.AbsoluteIndex + lastWhitespace.Content.Length == CurrentLocation.AbsoluteIndex));
-
             if (EndOfFile)
             {
                 if (lastWhitespace != null)
@@ -484,12 +485,8 @@ namespace Microsoft.AspNet.Razor.Parser
                 // MARKUP owns whitespace EXCEPT in DesignTimeMode.
                 PutCurrentBack();
 
-                // Put back the whitespace unless it precedes a '<text>' tag.
-                if (nextSymbol != null &&
-                    !string.Equals(nextSymbol.Content, SyntaxConstants.TextTagName, StringComparison.Ordinal))
-                {
-                    PutBack(lastWhitespace);
-                }
+                // Accept whitespace so it can be written out as code.
+                Accept(lastWhitespace);
             }
 
             if (isMarkup)
@@ -727,6 +724,15 @@ namespace Microsoft.AspNet.Razor.Parser
             Output(SpanKind.Code);
         }
 
+        private string GetCurrentSymbolName()
+        {
+            if (CurrentSymbol.Type == CSharpSymbolType.Keyword)
+            {
+                return CSharpLanguageCharacteristics.GetKeyword(CurrentSymbol.Keyword.Value);
+            }
+            return CurrentSymbol.Content;
+        }
+
         protected class Block
         {
             public Block(string name, SourceLocation start)
@@ -735,22 +741,8 @@ namespace Microsoft.AspNet.Razor.Parser
                 Start = start;
             }
 
-            public Block(CSharpSymbol symbol)
-                : this(GetName(symbol), symbol.Start)
-            {
-            }
-
             public string Name { get; set; }
             public SourceLocation Start { get; set; }
-
-            private static string GetName(CSharpSymbol sym)
-            {
-                if (sym.Type == CSharpSymbolType.Keyword)
-                {
-                    return CSharpLanguageCharacteristics.GetKeyword(sym.Keyword.Value);
-                }
-                return sym.Content;
-            }
         }
     }
 }

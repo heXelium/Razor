@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             if (Span.Symbols.Count == 0 && Context.LastAcceptedCharacters != AcceptedCharacters.Any)
             {
-                Accept(Language.CreateMarkerSymbol(location));
+                Accept(Language.CreateMarkerSymbol());
             }
         }
 
@@ -264,6 +264,7 @@ namespace Microsoft.AspNet.Razor.Parser
             if (Span.Symbols.Count > 0)
             {
                 Context.AddSpan(Span.Build());
+
                 Initialize(Span);
             }
         }
@@ -312,7 +313,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected internal void Expected(params TSymbolType[] types)
         {
-            Debug.Assert(!EndOfFile && CurrentSymbol != null && types.Contains(CurrentSymbol.Type));
+            //Debug.Assert(!EndOfFile && CurrentSymbol != null && types.Contains(CurrentSymbol.Type));
             AcceptAndMoveNext();
         }
 

@@ -13,19 +13,14 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
     {
         public static LocationTagged<string> GetContent(this SpanBuilder span)
         {
-            return GetContent(span, e => e);
-        }
-
-        public static LocationTagged<string> GetContent(this SpanBuilder span, Func<IEnumerable<ISymbol>, IEnumerable<ISymbol>> filter)
-        {
-            return GetContent(filter(span.Symbols), span.Start);
+            return GetContent(span.Symbols, span.Start);
         }
 
         public static LocationTagged<string> GetContent(this IEnumerable<ISymbol> symbols, SourceLocation spanStart)
         {
             if (symbols.Any())
             {
-                return new LocationTagged<string>(string.Concat(symbols.Select(s => s.Content)), spanStart + symbols.First().Start);
+                return new LocationTagged<string>(GetContent(symbols), spanStart);
             }
             else
             {
@@ -33,10 +28,8 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
             }
         }
 
-        public static LocationTagged<string> GetContent(this ISymbol symbol)
-        {
-            return new LocationTagged<string>(symbol.Content, symbol.Start);
-        }
+        public static string GetContent(this IEnumerable<ISymbol> symbols) =>
+            string.Concat(symbols.Select(s => s.Content));
 
         /// <summary>
         /// Converts the generic <see cref="IEnumerable{ISymbol}"/> to a <see cref="IEnumerable{HtmlSymbol}"/> and

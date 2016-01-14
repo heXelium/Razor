@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     else
                     {
                         Context.OnError(
-                            CurrentSymbol.Start,
+                            CurrentLocation,
                             RazorResources.ParseError_MarkupBlock_Must_Start_With_Tag,
                             CurrentSymbol.Content.Length);
                     }
@@ -462,21 +462,29 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // http://dev.w3.org/html5/spec/tokenization.html#attribute-name-state
             // Read the 'name' (i.e. read until the '=' or whitespace/newline)
-            var name = Enumerable.Empty<HtmlSymbol>();
-            var whitespaceAfterAttributeName = Enumerable.Empty<HtmlSymbol>();
+            var name = new List<HtmlSymbol>();
+            var whitespaceAfterAttributeName = new List<HtmlSymbol>();
             if (IsValidAttributeNameSymbol(CurrentSymbol))
             {
-                name = ReadWhile(sym =>
-                                 sym.Type != HtmlSymbolType.WhiteSpace &&
-                                 sym.Type != HtmlSymbolType.NewLine &&
-                                 sym.Type != HtmlSymbolType.Equals &&
-                                 sym.Type != HtmlSymbolType.CloseAngle &&
-                                 sym.Type != HtmlSymbolType.OpenAngle &&
-                                 (sym.Type != HtmlSymbolType.ForwardSlash || !NextIs(HtmlSymbolType.CloseAngle)));
+                while (EnsureCurrent() &&
+                    CurrentSymbol.Type != HtmlSymbolType.WhiteSpace &&
+                    CurrentSymbol.Type != HtmlSymbolType.NewLine &&
+                    CurrentSymbol.Type != HtmlSymbolType.Equals &&
+                    CurrentSymbol.Type != HtmlSymbolType.CloseAngle &&
+                    CurrentSymbol.Type != HtmlSymbolType.OpenAngle &&
+                    (CurrentSymbol.Type != HtmlSymbolType.ForwardSlash || !NextIs(HtmlSymbolType.CloseAngle)))
+                {
+                    name.Add(CurrentSymbol);
+                    NextToken();
+                }
 
                 // capture whitespace after attribute name (if any)
-                whitespaceAfterAttributeName = ReadWhile(
-                    sym => sym.Type == HtmlSymbolType.WhiteSpace || sym.Type == HtmlSymbolType.NewLine);
+                while (EnsureCurrent() &&
+                    CurrentSymbol.Type == HtmlSymbolType.WhiteSpace || CurrentSymbol.Type == HtmlSymbolType.NewLine)
+                {
+                    whitespaceAfterAttributeName.Add(CurrentSymbol);
+                    NextToken();
+                }
             }
             else
             {
@@ -526,8 +534,8 @@ namespace Microsoft.AspNet.Razor.Parser
             IEnumerable<HtmlSymbol> whitespaceAfterAttributeName)
         {
             // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
-            var name = nameSymbols.GetContent(Span.Start);
-            var attributeCanBeConditional = !name.Value.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
+            var name = nameSymbols.GetContent();
+            var attributeCanBeConditional = !name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
 
             // Accept the whitespace and name
             Accept(whitespace);
@@ -577,7 +585,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 var suffix = new LocationTagged<string>(string.Empty, CurrentLocation);
                 if (quote != HtmlSymbolType.Unknown && At(quote))
                 {
-                    suffix = CurrentSymbol.GetContent();
+                    suffix = new LocationTagged<string>(CurrentSymbol.Content, CurrentLocation);
                     AcceptAndMoveNext();
                 }
 
@@ -633,7 +641,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         // Render a single "@" in place of "@@".
                         Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
                             prefix.GetContent(prefixStart),
-                            new LocationTagged<string>(CurrentSymbol.GetContent(), CurrentLocation));
+                            new LocationTagged<string>(CurrentSymbol.Content, CurrentLocation));
                         AcceptAndMoveNext();
                         Output(SpanKind.Markup, AcceptedCharacters.None);
 
@@ -677,9 +685,11 @@ namespace Microsoft.AspNet.Razor.Parser
                     // but for now that's ok)
                     !IsEndOfAttributeValue(quote, sym));
                 Accept(value);
+                var prefixTaggedLocation = prefix.GetContent(prefixStart);
+                var valueLocation = SourceLocation.Advance(prefixStart, prefixTaggedLocation);
                 Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
-                    prefix.GetContent(prefixStart),
-                    value.GetContent(prefixStart));
+                    prefixTaggedLocation,
+                    value.GetContent(valueLocation));
             }
             Output(SpanKind.Markup);
         }
@@ -774,11 +784,11 @@ namespace Microsoft.AspNet.Razor.Parser
 
             if (potentialTagNameSymbol == null || potentialTagNameSymbol.Type != HtmlSymbolType.Text)
             {
-                tagName = new HtmlSymbol(potentialTagNameSymbol.Start, string.Empty, HtmlSymbolType.Unknown);
+                tagName = new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown);
             }
             else if (bangSymbol != null)
             {
-                tagName = new HtmlSymbol(bangSymbol.Start, "!" + potentialTagNameSymbol.Content, HtmlSymbolType.Text);
+                tagName = new HtmlSymbol("!" + potentialTagNameSymbol.Content, HtmlSymbolType.Text);
             }
             else
             {

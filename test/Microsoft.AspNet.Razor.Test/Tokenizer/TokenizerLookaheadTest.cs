@@ -65,13 +65,13 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
             var tokenizer = new HtmlTokenizer(new SeekableTextReader(new StringReader("<foo>")));
             using (tokenizer.Source.BeginLookahead())
             {
-                Assert.Equal(new HtmlSymbol(0, 0, 0, "<", HtmlSymbolType.OpenAngle), tokenizer.NextSymbol());
-                Assert.Equal(new HtmlSymbol(1, 0, 1, "foo", HtmlSymbolType.Text), tokenizer.NextSymbol());
-                Assert.Equal(new HtmlSymbol(4, 0, 4, ">", HtmlSymbolType.CloseAngle), tokenizer.NextSymbol());
+                Assert.Equal(new HtmlSymbol("<", HtmlSymbolType.OpenAngle), tokenizer.NextSymbol());
+                Assert.Equal(new HtmlSymbol("foo", HtmlSymbolType.Text), tokenizer.NextSymbol());
+                Assert.Equal(new HtmlSymbol(">", HtmlSymbolType.CloseAngle), tokenizer.NextSymbol());
             }
-            Assert.Equal(new HtmlSymbol(0, 0, 0, "<", HtmlSymbolType.OpenAngle), tokenizer.NextSymbol());
-            Assert.Equal(new HtmlSymbol(1, 0, 1, "foo", HtmlSymbolType.Text), tokenizer.NextSymbol());
-            Assert.Equal(new HtmlSymbol(4, 0, 4, ">", HtmlSymbolType.CloseAngle), tokenizer.NextSymbol());
+            Assert.Equal(new HtmlSymbol("<", HtmlSymbolType.OpenAngle), tokenizer.NextSymbol());
+            Assert.Equal(new HtmlSymbol("foo", HtmlSymbolType.Text), tokenizer.NextSymbol());
+            Assert.Equal(new HtmlSymbol(">", HtmlSymbolType.CloseAngle), tokenizer.NextSymbol());
         }
 
         [Fact]
@@ -80,11 +80,11 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
             var tokenizer = new HtmlTokenizer(new SeekableTextReader(new StringReader("<foo>")));
             using (LookaheadToken lookahead = tokenizer.Source.BeginLookahead())
             {
-                Assert.Equal(new HtmlSymbol(0, 0, 0, "<", HtmlSymbolType.OpenAngle), tokenizer.NextSymbol());
-                Assert.Equal(new HtmlSymbol(1, 0, 1, "foo", HtmlSymbolType.Text), tokenizer.NextSymbol());
+                Assert.Equal(new HtmlSymbol("<", HtmlSymbolType.OpenAngle), tokenizer.NextSymbol());
+                Assert.Equal(new HtmlSymbol("foo", HtmlSymbolType.Text), tokenizer.NextSymbol());
                 lookahead.Accept();
             }
-            Assert.Equal(new HtmlSymbol(4, 0, 4, ">", HtmlSymbolType.CloseAngle), tokenizer.NextSymbol());
+            Assert.Equal(new HtmlSymbol(">", HtmlSymbolType.CloseAngle), tokenizer.NextSymbol());
         }
 
         private class ExposedTokenizer : Tokenizer<CSharpSymbol, CSharpSymbolType>
@@ -135,7 +135,6 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
             }
 
             protected override CSharpSymbol CreateSymbol(
-                SourceLocation start,
                 string content,
                 CSharpSymbolType type,
                 IEnumerable<RazorError> errors)

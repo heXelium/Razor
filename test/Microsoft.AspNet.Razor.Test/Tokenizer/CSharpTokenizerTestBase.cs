@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
 {
     public abstract class CSharpTokenizerTestBase : TokenizerTestBase<CSharpSymbol, CSharpSymbolType>
     {
-        private static CSharpSymbol _ignoreRemaining = new CSharpSymbol(0, 0, 0, string.Empty, CSharpSymbolType.Unknown);
+        private static CSharpSymbol _ignoreRemaining = new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown);
 
         protected override CSharpSymbol IgnoreRemaining
         {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
 
         protected void TestSingleToken(string text, CSharpSymbolType expectedSymbolType)
         {
-            TestTokenizer(text, new CSharpSymbol(0, 0, 0, text, expectedSymbolType));
+            TestTokenizer(text, new CSharpSymbol(text, expectedSymbolType));
         }
     }
 }

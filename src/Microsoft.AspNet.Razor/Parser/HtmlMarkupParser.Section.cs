@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Razor.Parser
             EnsureCurrent();
             if (string.Equals(CurrentSymbol.Content, nestingSequenceComponents[0], Comparison))
             {
-                var bookmark = CurrentSymbol.Start.AbsoluteIndex;
+                var bookmark = CurrentLocation.AbsoluteIndex;
                 try
                 {
                     foreach (string component in nestingSequenceComponents)
@@ -147,6 +147,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 {
                     // Capture the current symbol and "put it back" (really we just want to clear CurrentSymbol)
                     var bookmark = Context.Source.Position;
+                    var symbolStart = CurrentLocation;
                     var sym = CurrentSymbol;
                     PutCurrentBack();
 
@@ -169,7 +170,7 @@ namespace Microsoft.AspNet.Razor.Parser
                         // This is 'popping' the final entry on the stack of nesting sequences
                         // A caller higher in the parsing stack will accept the sequence token, so advance
                         // to it
-                        Context.Source.Position = sequenceToken.Start.AbsoluteIndex;
+                        Context.Source.Position = SourceLocation.Advance(symbolStart, preSequence.Content).AbsoluteIndex;
                     }
                     else
                     {
@@ -179,7 +180,9 @@ namespace Microsoft.AspNet.Razor.Parser
                         // Position at the start of the postSequence symbol
                         if (postSequence != null)
                         {
-                            Context.Source.Position = postSequence.Start.AbsoluteIndex;
+                            var newLocation = SourceLocation.Advance(symbolStart, preSequence.Content);
+                            newLocation = SourceLocation.Advance(newLocation, sequenceToken.Content);
+                            Context.Source.Position = newLocation.AbsoluteIndex;
                         }
                         else
                         {

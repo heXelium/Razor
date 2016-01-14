@@ -160,11 +160,17 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             // the attribute value the symbolOffset is adjusted accordingly.
             var symbolOffset = 0;
             string name = null;
+            var symbolStart = span.Start;
 
             // Iterate down through the symbols to find the name and the start of the value.
             // We subtract the symbolOffset so we don't accept an ending quote of a span.
             for (var i = 0; i < htmlSymbols.Length - symbolOffset; i++)
             {
+                if (i > 0)
+                {
+                    symbolStart = SourceLocation.Advance(symbolStart, htmlSymbols[i - 1].Content);
+                }
+
                 var symbol = htmlSymbols[i];
 
                 if (afterEquals)
@@ -181,7 +187,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     {
                         capturedAttributeValueStart = true;
 
-                        attributeValueStartLocation = span.Start + symbol.Start;
+                        attributeValueStartLocation = span.Start + symbolStart;
                     }
 
                     builder.Accept(symbol);
@@ -221,6 +227,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     do
                     {
                         i++; // Start from the symbol after '='.
+                        symbolStart = SourceLocation.Advance(symbolStart, htmlSymbols[i - 1].Content);
                     } while (i < htmlSymbols.Length &&
                         (htmlSymbols[i].Type == HtmlSymbolType.WhiteSpace ||
                         htmlSymbols[i].Type == HtmlSymbolType.NewLine));
@@ -228,7 +235,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     // Check for attribute start values, aka single or double quote
                     if (i < htmlSymbols.Length && IsQuote(htmlSymbols[i]))
                     {
-                        symbolStartLocation = htmlSymbols[i].Start;
+                        symbolStartLocation = symbolStart;
 
                         // If there's a start quote then there must be an end quote to be valid, skip it.
                         symbolOffset = 1;
@@ -238,7 +245,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                         // We are at the symbol after equals. Go back to equals to ensure we don't skip past that symbol.
                         i--;
 
-                        symbolStartLocation = symbol.Start;
+                        symbolStartLocation = symbolStart;
                     }
 
                     attributeValueStartLocation =
@@ -567,12 +574,20 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
             // Attributes must have at least one non-whitespace character to represent the tagName (even if its a C#
             // expression).
-            var firstNonWhitespaceSymbol = span
-                .Symbols
-                .OfType<HtmlSymbol>()
-                .First(sym => sym.Type != HtmlSymbolType.WhiteSpace && sym.Type != HtmlSymbolType.NewLine);
+            var firstNonWhiteSpaceStart = span.Start;
+            foreach (var symbol in span.Symbols.Skip(1))
+            {
+                firstNonWhiteSpaceStart = SourceLocation.Advance(firstNonWhiteSpaceStart, symbol.Content);
+                var htmlSymbol = symbol as HtmlSymbol;
+                if (htmlSymbol != null &&
+                    htmlSymbol.Type != HtmlSymbolType.WhiteSpace &&
+                    htmlSymbol.Type != HtmlSymbolType.NewLine)
+                {
+                    break;
+                }
+            }
 
-            return nodeStart + firstNonWhitespaceSymbol.Start;
+            return nodeStart + firstNonWhiteSpaceStart;
         }
 
         private static Span CreateMarkupAttribute(SpanBuilder builder, bool isBoundNonStringAttribute)

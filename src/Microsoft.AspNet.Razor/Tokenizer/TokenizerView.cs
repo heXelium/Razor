@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         public TTokenizer Tokenizer { get; private set; }
         public bool EndOfFile { get; private set; }
         public TSymbol Current { get; private set; }
+        public SourceLocation CurrentSymbolLocation { get; private set; }
 
         public ITextDocument Source
         {
@@ -29,6 +30,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         public bool Next()
         {
+            CurrentSymbolLocation = Source.Location;
             Current = Tokenizer.NextSymbol();
             EndOfFile = (Current == null);
             return !EndOfFile;
@@ -36,15 +38,6 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         public void PutBack(TSymbol symbol)
         {
-            Debug.Assert(Source.Position == symbol.Start.AbsoluteIndex + symbol.Content.Length);
-            if (Source.Position != symbol.Start.AbsoluteIndex + symbol.Content.Length)
-            {
-                // We've already passed this symbol
-                throw new InvalidOperationException(
-                    RazorResources.FormatTokenizerView_CannotPutBack(
-                        symbol.Start.AbsoluteIndex + symbol.Content.Length,
-                        Source.Position));
-            }
             Source.Position -= symbol.Content.Length;
             Current = null;
             EndOfFile = Source.Position >= Source.Length;

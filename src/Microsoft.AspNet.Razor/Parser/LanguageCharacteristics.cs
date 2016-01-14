@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Razor.Parser
         public abstract string GetSample(TSymbolType type);
         public abstract TTokenizer CreateTokenizer(ITextDocument source);
         public abstract TSymbolType FlipBracket(TSymbolType bracket);
-        public abstract TSymbol CreateMarkerSymbol(SourceLocation location);
+        public abstract TSymbol CreateMarkerSymbol();
 
         public virtual IEnumerable<TSymbol> TokenizeString(string content)
         {
@@ -33,7 +33,6 @@ namespace Microsoft.AspNet.Razor.Parser
                 TSymbol sym;
                 while ((sym = tok.NextSymbol()) != null)
                 {
-                    sym.OffsetStart(start);
                     yield return sym;
                 }
             }
@@ -91,11 +90,11 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public virtual Tuple<TSymbol, TSymbol> SplitSymbol(TSymbol symbol, int splitAt, TSymbolType leftType)
         {
-            var left = CreateSymbol(symbol.Start, symbol.Content.Substring(0, splitAt), leftType, Enumerable.Empty<RazorError>());
+            var left = CreateSymbol(symbol.Content.Substring(0, splitAt), leftType, Enumerable.Empty<RazorError>());
             TSymbol right = null;
             if (splitAt < symbol.Content.Length)
             {
-                right = CreateSymbol(SourceLocationTracker.CalculateNewLocation(symbol.Start, left.Content), symbol.Content.Substring(splitAt), symbol.Type, symbol.Errors);
+                right = CreateSymbol(symbol.Content.Substring(splitAt), symbol.Type, symbol.Errors);
             }
             return Tuple.Create(left, right);
         }
@@ -107,6 +106,6 @@ namespace Microsoft.AspNet.Razor.Parser
             return type == KnownSymbolType.Unknown || !Equals(GetKnownSymbolType(type), GetKnownSymbolType(KnownSymbolType.Unknown));
         }
 
-        protected abstract TSymbol CreateSymbol(SourceLocation location, string content, TSymbolType type, IEnumerable<RazorError> errors);
+        protected abstract TSymbol CreateSymbol(string content, TSymbolType type, IEnumerable<RazorError> errors);
     }
 }

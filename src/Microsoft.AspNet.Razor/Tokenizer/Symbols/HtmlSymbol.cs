@@ -10,17 +10,8 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
     public class HtmlSymbol : SymbolBase<HtmlSymbolType>
     {
         // Helper constructor
-        public HtmlSymbol(int offset, int line, int column, string content, HtmlSymbolType type)
-            : this(new SourceLocation(offset, line, column), content, type, Enumerable.Empty<RazorError>())
-        {
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
-            }
-        }
-
-        public HtmlSymbol(SourceLocation start, string content, HtmlSymbolType type)
-            : base(start, content, type, Enumerable.Empty<RazorError>())
+        public HtmlSymbol(string content, HtmlSymbolType type)
+            : this(content, type, Enumerable.Empty<RazorError>())
         {
             if (content == null)
             {
@@ -29,26 +20,10 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         }
 
         public HtmlSymbol(
-            int offset,
-            int line,
-            int column,
             string content,
             HtmlSymbolType type,
             IEnumerable<RazorError> errors)
-            : base(new SourceLocation(offset, line, column), content, type, errors)
-        {
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
-            }
-        }
-
-        public HtmlSymbol(
-            SourceLocation start,
-            string content,
-            HtmlSymbolType type,
-            IEnumerable<RazorError> errors)
-            : base(start, content, type, errors)
+            : base(content, type, errors)
         {
             if (content == null)
             {

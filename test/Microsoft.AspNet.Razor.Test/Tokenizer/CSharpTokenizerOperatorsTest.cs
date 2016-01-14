@@ -126,8 +126,8 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         public void LeftShift_Is_Not_Specially_Recognized()
         {
             TestTokenizer("<<",
-                new CSharpSymbol(0, 0, 0, "<", CSharpSymbolType.LessThan),
-                new CSharpSymbol(1, 0, 1, "<", CSharpSymbolType.LessThan));
+                new CSharpSymbol("<", CSharpSymbolType.LessThan),
+                new CSharpSymbol("<", CSharpSymbolType.LessThan));
         }
 
         [Fact]
@@ -284,8 +284,8 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         public void RightShift_Is_Not_Specially_Recognized()
         {
             TestTokenizer(">>",
-                new CSharpSymbol(0, 0, 0, ">", CSharpSymbolType.GreaterThan),
-                new CSharpSymbol(1, 0, 1, ">", CSharpSymbolType.GreaterThan));
+                new CSharpSymbol(">", CSharpSymbolType.GreaterThan),
+                new CSharpSymbol(">", CSharpSymbolType.GreaterThan));
         }
 
         [Fact]

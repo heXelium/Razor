@@ -612,15 +612,13 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         public void ParseBlockSupportsMarkupWithinTryClause()
         {
             RunSimpleWrappedMarkupTest(
-                prefix: "try {",
-                markup: " <p>Foo</p> ",
-                suffix: "}",
+                prefix: "try { ",
+                markup: "<p>Foo</p>",
+                suffix: " }",
                 expectedMarkup: new MarkupBlock(
-                    Factory.Markup(" "),
                     BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
                     Factory.Markup("Foo"),
-                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
-                    Factory.Markup(" ").Accepts(AcceptedCharacters.None)));
+                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None)));
         }
 
         [Fact]

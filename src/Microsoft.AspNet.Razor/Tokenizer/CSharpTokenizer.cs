@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
     public class CSharpTokenizer : Tokenizer<CSharpSymbol, CSharpSymbolType>
     {
         private Dictionary<char, Func<CSharpSymbolType>> _operatorHandlers;
+        private Dictionary<string, CSharpSymbol> _symbolCache;
 
         public CSharpTokenizer(ITextDocument source)
             : base(source)
@@ -23,6 +24,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             }
 
             CurrentState = Data;
+            _symbolCache = new Dictionary<string, CSharpSymbol>(StringComparer.Ordinal);
 
             _operatorHandlers = new Dictionary<char, Func<CSharpSymbolType>>()
             {
@@ -72,9 +74,17 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             get { return CSharpSymbolType.RazorCommentStar; }
         }
 
-        protected override CSharpSymbol CreateSymbol(SourceLocation start, string content, CSharpSymbolType type, IEnumerable<RazorError> errors)
+        protected override CSharpSymbol CreateSymbol(string content, CSharpSymbolType type, IEnumerable<RazorError> errors)
         {
-            return new CSharpSymbol(start, content, type, errors);
+            CSharpSymbol symbol;
+            if (!_symbolCache.TryGetValue(content, out symbol))
+            {
+                symbol = new CSharpSymbol(content, type, errors);
+
+                _symbolCache.Add(content, symbol);
+            }
+
+            return symbol;
         }
 
         private StateResult Data()
@@ -440,7 +450,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                 {
                     type = CSharpSymbolType.Keyword;
                 }
-                sym = new CSharpSymbol(CurrentStart, Buffer.ToString(), type) { Keyword = kwd };
+                sym = new CSharpSymbol(Buffer.ToString(), type) { Keyword = kwd };
             }
             StartSymbol();
             return Stay(sym);

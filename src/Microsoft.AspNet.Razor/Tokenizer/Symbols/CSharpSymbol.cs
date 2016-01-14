@@ -9,18 +9,8 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 {
     public class CSharpSymbol : SymbolBase<CSharpSymbolType>
     {
-        // Helper constructor
-        public CSharpSymbol(int offset, int line, int column, string content, CSharpSymbolType type)
-            : this(new SourceLocation(offset, line, column), content, type, Enumerable.Empty<RazorError>())
-        {
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
-            }
-        }
-
-        public CSharpSymbol(SourceLocation start, string content, CSharpSymbolType type)
-            : this(start, content, type, Enumerable.Empty<RazorError>())
+        public CSharpSymbol(string content, CSharpSymbolType type)
+            : this(content, type, Enumerable.Empty<RazorError>())
         {
             if (content == null)
             {
@@ -29,13 +19,10 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         }
 
         public CSharpSymbol(
-            int offset,
-            int line,
-            int column,
             string content,
             CSharpSymbolType type,
             IEnumerable<RazorError> errors)
-            : base(new SourceLocation(offset, line, column), content, type, errors)
+            : base(content, type, errors)
         {
             if (content == null)
             {
@@ -43,20 +30,6 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
             }
         }
 
-        public CSharpSymbol(
-            SourceLocation start,
-            string content,
-            CSharpSymbolType type,
-            IEnumerable<RazorError> errors)
-            : base(start, content, type, errors)
-        {
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
-            }
-        }
-
-        public bool? EscapedIdentifier { get; set; }
         public CSharpKeyword? Keyword { get; set; }
 
         public override bool Equals(object obj)

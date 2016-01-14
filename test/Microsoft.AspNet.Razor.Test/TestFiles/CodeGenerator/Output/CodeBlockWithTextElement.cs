@@ -16,7 +16,7 @@ namespace TestOutput
         {
 #line 1 "CodeBlockWithTextElement.cshtml"
   
-    var a = 1;
+    var a = 1; 
 
 #line default
 #line hidden
@@ -25,7 +25,7 @@ namespace TestOutput
             WriteLiteral("foo");
             Instrumentation.EndContext();
 #line 2 "CodeBlockWithTextElement.cshtml"
-                               		
+                                		
 
 #line default
 #line hidden
@@ -34,7 +34,7 @@ namespace TestOutput
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
 #line 3 "CodeBlockWithTextElement.cshtml"
-    var b = 1;
+    var b = 1;			
 
 #line default
 #line hidden
@@ -44,7 +44,7 @@ namespace TestOutput
             Instrumentation.EndContext();
             Instrumentation.BeginContext(69, 3, false);
 #line 3 "CodeBlockWithTextElement.cshtml"
-                    Write(a+b);
+                              Write(a+b);
 
 #line default
 #line hidden

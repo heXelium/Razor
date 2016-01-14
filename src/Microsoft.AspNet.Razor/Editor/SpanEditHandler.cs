@@ -87,7 +87,6 @@ namespace Microsoft.AspNet.Razor.Editor
             newSpan.ClearSymbols();
             foreach (ISymbol sym in Tokenizer(newContent))
             {
-                sym.OffsetStart(target.Start);
                 newSpan.Accept(sym);
             }
             if (target.Next != null)

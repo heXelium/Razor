@@ -69,13 +69,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
             if (_symbols.Count == 0)
             {
-                Start = symbol.Start;
-                symbol.ChangeStart(SourceLocation.Zero);
                 _tracker.CurrentLocation = SourceLocation.Zero;
-            }
-            else
-            {
-                symbol.ChangeStart(_tracker.CurrentLocation);
             }
 
             _symbols.Add(symbol);

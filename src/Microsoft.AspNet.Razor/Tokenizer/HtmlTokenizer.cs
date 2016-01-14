@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.Razor.Tokenizer
     {
         private const char TransitionChar = '@';
 
+        private Dictionary<string, HtmlSymbol> _symbolCache;
+
         public HtmlTokenizer(ITextDocument source)
             : base(source)
         {
@@ -24,6 +26,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             }
 
             CurrentState = Data;
+            _symbolCache = new Dictionary<string, HtmlSymbol>(StringComparer.Ordinal);
         }
 
         protected override State StartState
@@ -59,9 +62,17 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             }
         }
 
-        protected override HtmlSymbol CreateSymbol(SourceLocation start, string content, HtmlSymbolType type, IEnumerable<RazorError> errors)
+        protected override HtmlSymbol CreateSymbol(string content, HtmlSymbolType type, IEnumerable<RazorError> errors)
         {
-            return new HtmlSymbol(start, content, type, errors);
+            HtmlSymbol symbol;
+            if (!_symbolCache.TryGetValue(content, out symbol))
+            {
+                symbol = new HtmlSymbol(content, type);
+
+                _symbolCache.Add(content, symbol);
+            }
+
+            return symbol;
         }
 
         // http://dev.w3.org/html5/spec/Overview.html#data-state

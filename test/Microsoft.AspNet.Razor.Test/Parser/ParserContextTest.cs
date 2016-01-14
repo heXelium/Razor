@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             {
                 Kind = SpanKind.Code
             };
-            builder.Accept(new CSharpSymbol(1, 0, 1, "foo", CSharpSymbolType.Identifier));
+            builder.Accept(new CSharpSymbol("foo", CSharpSymbolType.Identifier));
             var added = builder.Build();
 
             using (context.StartBlock(BlockType.Functions))

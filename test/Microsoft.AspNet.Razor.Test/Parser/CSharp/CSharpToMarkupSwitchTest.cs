@@ -579,7 +579,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         {
             ParseBlockTest("if (i > 0) { <text>;</text> }",
                            new StatementBlock(
-                               Factory.Code("if (i > 0) {").AsStatement(),
+                               Factory.Code("if (i > 0) { ").AsStatement(),
                                new MarkupBlock(
                                    new MarkupTagBlock(
                                         Factory.MarkupTransition("<text>").Accepts(AcceptedCharacters.None)),
@@ -597,7 +597,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
             ParseBlockTest("{ if (i > 0) { <text>;</text> } }",
                            new StatementBlock(
                                Factory.MetaCode("{").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" if (i > 0) {")
+                               Factory.Code(" if (i > 0) { ")
                                    .AsStatement()
                                    .AutoCompleteWith(autoCompleteString: null),
                                new MarkupBlock(

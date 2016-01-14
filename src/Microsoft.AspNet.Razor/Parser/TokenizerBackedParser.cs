@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
@@ -38,7 +40,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected SourceLocation CurrentLocation
         {
-            get { return (EndOfFile || CurrentSymbol == null) ? Context.Source.Location : CurrentSymbol.Start; }
+            get { return (EndOfFile || CurrentSymbol == null) ? Context.Source.Location : Tokenizer.CurrentSymbolLocation; }
         }
 
         protected bool EndOfFile
@@ -59,7 +61,8 @@ namespace Microsoft.AspNet.Razor.Parser
 
         public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
         {
-            foreach (ISymbol sym in Language.TokenizeString(start, content))
+            span.Start = start;
+            foreach (var sym in Language.TokenizeString(start, content))
             {
                 span.Accept(sym);
             }
@@ -67,6 +70,18 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected void Initialize(SpanBuilder span)
         {
+            if (Context?.LastSpan != null)
+            {
+                var newSpanStart = Context.LastSpan.Start;
+
+                foreach (var symbol in Context.LastSpan.Symbols)
+                {
+                    newSpanStart = SourceLocation.Advance(newSpanStart, symbol.Content);
+                }
+
+                Span.Start = newSpanStart;
+            }
+
             if (SpanConfig != null)
             {
                 SpanConfig(span);

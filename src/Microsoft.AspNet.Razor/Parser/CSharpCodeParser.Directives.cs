@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Verify we're on "functions" and accept
             AssertDirective(SyntaxConstants.CSharp.FunctionsKeyword);
-            var block = new Block(CurrentSymbol);
+            var block = new Block(GetCurrentSymbolName(), CurrentLocation);
             AcceptAndMoveNext();
 
             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: false));

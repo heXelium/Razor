@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
 {
     public abstract class HtmlTokenizerTestBase : TokenizerTestBase<HtmlSymbol, HtmlSymbolType>
     {
-        private static HtmlSymbol _ignoreRemaining = new HtmlSymbol(0, 0, 0, string.Empty, HtmlSymbolType.Unknown);
+        private static HtmlSymbol _ignoreRemaining = new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown);
 
         protected override HtmlSymbol IgnoreRemaining
         {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
 
         protected void TestSingleToken(string text, HtmlSymbolType expectedSymbolType)
         {
-            TestTokenizer(text, new HtmlSymbol(0, 0, 0, text, expectedSymbolType));
+            TestTokenizer(text, new HtmlSymbol(text, expectedSymbolType));
         }
     }
 }
